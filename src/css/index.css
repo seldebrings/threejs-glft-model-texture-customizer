@@ -1,0 +1,79 @@
+@import "variables.css";
+@import "font-face-rules.css";
+
+body {
+  font-family: var(--typography-font-family-primary);
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  width: 100vw;
+}
+
+li {
+  font-family: var(--typography-font-family-secondary);
+}
+
+.app {
+  font-family: var(--typography-font-family-primary);
+  flex-direction: column;
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.header {
+  background-color: var(--colors-background-primary);
+  display: flex;
+}
+
+.table-of-contents {
+  background-color: var(--colors-background-secondary);
+  display: flex;
+}
+
+.main-canvas-container {
+  background: var(--colors-background-main);
+  background: var(--colors-background-gradient);
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.preview {
+  position: fixed;
+  bottom: 0;
+  left: 1vw;
+}
+
+/* .front-canvas-container > canvas {
+  height: 100%;
+  width: 100%;
+} */
+
+.front-canvas-container,
+.side-canvas-container {
+  background-color: var(--colors-background-primary);
+  height: 15vw;
+  width: 20vw;
+  margin-bottom: 1vw;
+  display: block;
+}
+
+.tooltip {
+  background: var(--colors-background-secondary);
+  border: 0;
+  border-radius: 1em;
+  font-family: var(--typography-font-family-secondary);
+  font-size: 1rem;
+  font-weight: bold;
+  height: auto;
+  padding: 0.5rem;
+  position: absolute;
+  text-align: center;
+  visibility: hidden;
+  width: auto;
+}
+
+.tooltip:hover {
+  opacity: 0.8;
+}

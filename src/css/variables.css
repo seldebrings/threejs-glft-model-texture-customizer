@@ -1,0 +1,17 @@
+:root {
+  /* COLORS */
+  --colors-background-primary: #474747;
+  --colors-background-secondary: #d6d6de;
+  --colors-header: #5f6e78;
+  --colors-background-main: rgb(214, 214, 222);
+  --colors-background-gradient: radial-gradient(
+    circle,
+    rgba(214, 214, 222, 1) 10%,
+    rgba(71, 71, 71, 1) 100%,
+    rgba(2, 0, 36, 1) 100%
+  );
+
+  /* TYPOGRAPHY */
+  --typography-font-family-primary: "InknutAntiqua", sans-serif;
+  --typography-font-family-secondary: "Raleway";
+}
