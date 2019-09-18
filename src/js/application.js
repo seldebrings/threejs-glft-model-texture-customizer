@@ -5,7 +5,7 @@ import * as onChange from "on-change";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as Detector from "../js/vendor/Detector";
 import * as DAT from "dat.gui";
-import * as Utils from "../js/utils";
+
 import * as checkerboard from "../textures/checkerboard.jpg";
 import * as hover from "../textures/hover.jpg";
 import * as camo from "../textures/camo.jpg";
@@ -61,9 +61,25 @@ export class Application {
     this.renderPreviews = this.renderPreviews.bind(this);
     this.updateCustomMesh = this.updateCustomMesh.bind(this);
     this.getMeshRef = this.getMeshRef.bind(this);
+    //utils
+    this.getAllChildrenNames = this.getAllChildrenNames.bind(this);
+    this.setMeshesColor = this.setMeshesColor.bind(this);
+    this.forEachMeshes = this.forEachMeshes.bind(this);
+    this.setMeshesMap = this.setMeshesMap.bind(this);
+    this.getTexture = this.getTexture.bind(this);
+    this.invertHex = this.invertHex.bind(this);
   }
 
   init() {
+    const getUrl = window.location;
+    const baseUrl =
+      getUrl.protocol +
+      "//" +
+      getUrl.host +
+      "/" +
+      getUrl.pathname.split("/")[1];
+    console.log("baseUrl " + baseUrl);
+
     window.addEventListener("resize", this.handleResize);
     this.createPreviews();
     this.setupScene();
@@ -214,16 +230,14 @@ export class Application {
       mat.color.setHex(currentMesh.color);
     }
     if (currentMesh.pattern && currentMesh.pattern !== "None") {
-      const diffuse = Utils.getTexture(
+      const diffuse = this.getTexture(
         this.textures[currentMesh.pattern].pattern
       );
       mat.map = diffuse;
     }
 
     if (currentMesh.normal) {
-      const bumpMap = Utils.getTexture(
-        this.textures[currentMesh.normal].normal
-      );
+      const bumpMap = this.getTexture(this.textures[currentMesh.normal].normal);
       mat.normalMap = bumpMap;
     }
 
@@ -398,7 +412,7 @@ export class Application {
     const { name, uuid, type } = interactionEvent.target;
     const meshRef = this.getMeshRef(child);
     if (this.meshes[meshRef].editable) {
-      Utils.forEachMeshes(meshRef, this.model, this.setShaderMaterial);
+      this.forEachMeshes(meshRef, this.model, this.setShaderMaterial);
     }
   }
 
@@ -406,7 +420,7 @@ export class Application {
     const child = interactionEvent.currentTarget;
     const meshRef = this.getMeshRef(child);
     if (this.meshes[meshRef].editable) {
-      Utils.forEachMeshes(meshRef, this.model, this.setMaterial);
+      this.forEachMeshes(meshRef, this.model, this.setMaterial);
     }
   }
 
@@ -451,9 +465,9 @@ export class Application {
     this.textureColor = this.textureFolder
       .addColor(this.meshes[meshRef], "color")
       .onChange(val => {
-        Utils.setMeshesColor(meshRef, this.model, this.meshes[meshRef].color);
+        this.setMeshesColor(meshRef, this.model, this.meshes[meshRef].color);
       });
-    Utils.setMeshesColor(meshRef, this.model, this.meshes[meshRef].color);
+    this.setMeshesColor(meshRef, this.model, this.meshes[meshRef].color);
 
     if (this.meshes[meshRef].pattern) {
       this.texturePattern = this.textureFolder
@@ -467,7 +481,7 @@ export class Application {
             this.meshes[meshRef].pattern === "None"
               ? null
               : this.textures[this.meshes[meshRef].pattern].pattern;
-          Utils.setMeshesMap(meshRef, this.model, texture);
+          this.setMeshesMap(meshRef, this.model, texture);
         });
     }
   }
@@ -568,7 +582,7 @@ export class Application {
           this.meshes[key].normal = val;
         });
 
-        const childrenNames = Utils.getAllChildrenNames(
+        const childrenNames = this.getAllChildrenNames(
           fabricMeshes,
           this.model
         );
@@ -579,5 +593,67 @@ export class Application {
       });
 
     materialFolder.open();
+  }
+
+  getAllChildrenNames(meshRef, model) {
+    const children = [];
+    if (typeof meshRef === "string") {
+      const main = model.getObjectByName(meshRef);
+      if (main.isMesh) {
+        children.push(main.name);
+      } else {
+        main.children.forEach(child => {
+          children.push(child.name);
+        });
+      }
+      return children;
+    } else if (Array.isArray(meshRef)) {
+      meshRef.forEach(ref => {
+        children.push(...this.getAllChildrenNames(ref, model));
+      });
+      return children;
+    }
+  }
+  setMeshesColor(meshRef, model, color) {
+    const childrenNames = this.getAllChildrenNames(meshRef, model);
+    childrenNames.forEach(childName => {
+      const child = model.getObjectByName(childName);
+      if (child.isMesh) {
+        child.material.dispose();
+        child.material.color = new THREE.Color(color);
+      }
+    });
+  }
+
+  forEachMeshes(meshRef, model, func) {
+    const childrenNames = this.getAllChildrenNames(meshRef, model);
+    childrenNames.forEach(func);
+  }
+
+  setMeshesMap(meshRef, model, texture) {
+    const childrenNames = this.getAllChildrenNames(meshRef, model);
+    childrenNames.forEach(childName => {
+      const child = model.getObjectByName(childName);
+      if (!texture) {
+        child.material.map = null;
+      } else {
+        const diffuse = this.getTexture(texture);
+        child.material.map = diffuse;
+      }
+      child.material.needsUpdate = true;
+    });
+  }
+
+  getTexture(name) {
+    const texture = new THREE.TextureLoader().load(name);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    return texture;
+  }
+
+  invertHex(hex) {
+    return (Number(`0x1${hex}`) ^ 0xffffff)
+      .toString(16)
+      .substr(1)
+      .toUpperCase();
   }
 }
