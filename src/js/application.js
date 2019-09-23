@@ -1,21 +1,31 @@
 import * as THREE from "three";
 import OrbitControls from "orbit-controls-es6";
+//import OrbitControls from "three-orbitcontrols";
+//import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Interaction } from "three.interaction";
-import * as onChange from "on-change";
+//import * as onChange from "on-change";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import * as Detector from "../js/vendor/Detector";
+//import * as Detector from "../js/vendor/Detector";
 import * as DAT from "dat.gui";
 
-import * as checkerboard from "../textures/checkerboard.jpg";
-import * as hover from "../textures/hover.jpg";
-import * as camo from "../textures/camo.jpg";
-import * as ghost from "../textures/ghost.jpg";
-import * as fabricNormal from "../textures/fabric_normal.jpg";
-import * as canvasNormal from "../textures/canvas_normal.jpg";
-import * as leatherNormal from "../textures/leather_normal.png";
-import * as vertShader from "../glsl/vert.glsl";
-import * as fragShader from "../glsl/frag.glsl";
-import gltfFile from "../gltf/vans.gltf";
+const checkerboard =
+  "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/checkerboard.jpg";
+const hover =
+  "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/hover.jpg";
+const camo =
+  "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/camo.jpg";
+const ghost =
+  "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/ghost.jpg";
+const fabricNormal =
+  "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/fabric_normal.jpg";
+const canvasNormal =
+  "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/canvas_normal.jpg";
+const leatherNormal =
+  "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/leather_normal.png";
+//import * as vertShader from "../glsl/vert.glsl";
+//import * as fragShader from "../glsl/frag.glsl";
+const gltfFile =
+  "https://superpills.github.io/threejs-glft-model-texture-customizer/src/gltf/vans.gltf";
 
 export class Application {
   constructor(opts = {}) {
@@ -25,15 +35,17 @@ export class Application {
       this.createContainer();
     }
 
-    if (Detector.webgl) {
+    this.bindEventHandlers();
+    this.init();
+    this.render();
+    /*  if (Detector.webgl) {
       this.bindEventHandlers();
       this.init();
       this.render();
     } else {
-      // console.warn("WebGL NOT supported in your browser!");
       const warning = Detector.getWebGLErrorMessage();
       this.container.appendChild(warning);
-    }
+    } */
   }
 
   /**
@@ -86,11 +98,11 @@ export class Application {
     this.initViews();
     this.setupRenderers();
     this.setupCamera();
-    const interaction = new Interaction(
+    /*   const interaction = new Interaction(
       this.mainRenderer,
       this.scene,
       this.views[0].camera
-    );
+    ); */
     this.setupLights();
     this.declareObjects();
     this.setupControls();
@@ -162,14 +174,13 @@ export class Application {
       },
     };
 
-    this.meshes = onChange(this.shoeParts, this.renderPreviews);
+    this.meshes = this.shoeParts; //onChange(this.shoeParts, this.renderPreviews);
   }
 
   loadModel() {
     this.loader = new GLTFLoader();
-    this.loader.parse(
+    this.loader.load(
       gltfFile,
-      "",
       gltf => {
         this.model = gltf.scene;
         this.scene.add(this.model);
@@ -207,9 +218,9 @@ export class Application {
   }
 
   setListeners(child) {
-    child.on("mouseover", this.onMouseOver);
+    /*   child.on("mouseover", this.onMouseOver);
     child.on("mouseout", this.onMouseOut);
-    child.on("mousedown", this.onMouseDown);
+    child.on("mousedown", this.onMouseDown); */
   }
 
   setMaterial(child) {
@@ -250,7 +261,7 @@ export class Application {
     child.material.dispose();
 
     this.delta = 0;
-    const customUniforms = {
+    this.customUniforms = {
       color1: {
         type: "c",
         value: new THREE.Color(0xacb6e5),
@@ -260,12 +271,23 @@ export class Application {
         value: new THREE.Color(0x74ebd5),
       },
       delta: { value: 0 },
+      time: {
+        type: "f",
+        value: 1.0,
+      },
+      resolution: {
+        type: "v2",
+        value: new THREE.Vector2(),
+      },
     };
 
+    this.customUniforms.resolution.value.x = window.innerWidth;
+    this.customUniforms.resolution.value.y = window.innerHeight;
+
     const mat = new THREE.ShaderMaterial({
-      fragmentShader: fragShader,
-      vertexShader: vertShader,
-      uniforms: customUniforms,
+      fragmentShader: document.getElementById("fragment_shader").textContent,
+      vertexShader: document.getElementById("vertexShader").textContent,
+      uniforms: this.customUniforms,
     });
 
     mat.needsUpdate = true;
@@ -298,8 +320,10 @@ export class Application {
   updateCustomMesh() {
     //console.log("updateCustomMesh");
     //this.delta += 0.1;
-    if (this.model) {
-      const customMesh = this.model.getObjectByName("Vamp");
+
+    if (this.model && this.customUniforms) {
+      const delta = this.clock.getDelta();
+      this.customUniforms.time.value += delta * 5;
       //console.log(JSON.stringify(customMesh));
       // customMesh.material.uniforms.delta.value =
       //   0.5 + Math.sin(this.delta) * 0.5;
@@ -307,7 +331,7 @@ export class Application {
   }
 
   render() {
-    this.controls.update();
+    //this.controls.update();
     this.updateCustomMesh();
     this.mainRenderer.render(this.scene, this.views[0].camera);
     requestAnimationFrame(() => this.render());
@@ -491,6 +515,7 @@ export class Application {
     this.scene.autoUpdate = true;
     const style = window.getComputedStyle(this.container);
     this.scene.fog = null;
+    this.clock = new THREE.Clock();
   }
 
   setupRenderers() {
@@ -557,7 +582,7 @@ export class Application {
   }
 
   setupControls() {
-    this.controls = new OrbitControls(
+    /*     this.controls = OrbitControls(
       this.views[0].camera,
       this.mainRenderer.domElement
     );
@@ -565,7 +590,7 @@ export class Application {
     this.controls.maxDistance = 1500;
     this.controls.minDistance = 0;
     this.controls.autoRotate = false;
-    this.controls.maxPolarAngle = Math.PI / 2;
+    this.controls.maxPolarAngle = Math.PI / 2; */
   }
 
   setupGUI() {

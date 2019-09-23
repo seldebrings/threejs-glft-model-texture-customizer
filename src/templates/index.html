@@ -8,7 +8,48 @@
       href="https://fonts.googleapis.com/css?family=Open+Sans|Raleway"
       rel="stylesheet"
     />
+    <script src="https://unpkg.com/three.interaction@0.2.2/build/three.interaction.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+
+    <!-- <script src="https://unpkg.com/three@^0.108.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@^0.108.0/examples/jsm/loaders/GLTFLoader"></script> -->
+
+    <!--  <script src="https://unpkg.com/three@^0.108.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@^0.108.0/examples/js/controls/OrbitControls.js"></script>  -->
+    <!--<script
+      type=""
+      src="https://unpkg.com/three@^0.108.0/build/three.min.js"
+    ></script>
+    <script
+      type=""
+      src="https://unpkg.com/three@^0.108.0/examples/jsm/controls/OrbitControls.js"
+    ></script> -->
+    <!--     <script
+      type=""
+      src="https://unpkg.com/three-orbitcontrols@^2.108.1/OrbitControls.js"
+    ></script> -->
     <!-- bundle.css is injected here by html-webpack-plugin -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+      varying vec2 vUv;
+      void main()
+      {
+      	vUv = uv;
+      	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+      	gl_Position = projectionMatrix * mvPosition;
+      }
+    </script>
+    <script id="fragment_shader" type="x-shader/x-fragment">
+      uniform float time;
+      uniform vec2 resolution;
+      varying vec2 vUv;
+      void main( void ) {
+      	vec2 position = -1.0 + 2.0 * vUv;
+      	float red = abs( sin( position.x * position.y + time / 5.0 ) );
+      	float green = abs( sin( position.x * position.y + time / 4.0 ) );
+      	float blue = abs( sin( position.x * position.y + time / 3.0 ) );
+      	gl_FragColor = vec4( red, green, blue, 1.0 );
+      }
+    </script>
   </head>
   <body>
     <div class="app">
