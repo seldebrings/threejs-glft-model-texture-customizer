@@ -1,11 +1,7 @@
 import * as THREE from "three";
-import OrbitControls from "orbit-controls-es6";
-//import OrbitControls from "three-orbitcontrols";
-//import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import OrbitControls from "../js/vendor/orbitcontrols";
 import { Interaction } from "three.interaction";
-//import * as onChange from "on-change";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-//import * as Detector from "../js/vendor/Detector";
 import * as DAT from "dat.gui";
 
 const checkerboard =
@@ -92,21 +88,21 @@ export class Application {
       getUrl.pathname.split("/")[1];
     console.log("baseUrl " + baseUrl);
 
-    window.addEventListener("resize", this.handleResize);
+    //window.addEventListener("resize", this.handleResize);
+    this.addListeners();
     this.createPreviews();
     this.setupScene();
     this.initViews();
     this.setupRenderers();
     this.setupCamera();
-    /*   const interaction = new Interaction(
+    const interaction = new Interaction(
       this.mainRenderer,
       this.scene,
       this.views[0].camera
-    ); */
+    );
     this.setupLights();
     this.declareObjects();
     this.setupControls();
-    const particleSpecs = { spread: { x: 50, y: 100, z: 50 } };
     this.loadModel();
   }
 
@@ -119,7 +115,6 @@ export class Application {
       Camouflage: { pattern: camo },
       Checkerboard: { pattern: checkerboard },
       Ghost: { pattern: ghost },
-      Hover: { pattern: hover },
     };
 
     this.shoeFabric = {
@@ -218,9 +213,9 @@ export class Application {
   }
 
   setListeners(child) {
-    /*   child.on("mouseover", this.onMouseOver);
+    child.on("mouseover", this.onMouseOver);
     child.on("mouseout", this.onMouseOut);
-    child.on("mousedown", this.onMouseDown); */
+    child.on("mousedown", this.onMouseDown);
   }
 
   setMaterial(child) {
@@ -306,6 +301,7 @@ export class Application {
   }
 
   renderPreviews() {
+    console.log("renderPreviews");
     setTimeout(() => {
       for (var i = 1; i < this.views.length; i++) {
         const view = this.views[i];
@@ -314,7 +310,7 @@ export class Application {
         this.previewRenderer.render(this.scene, view.camera);
         context.drawImage(this.previewRenderer.domElement, 0, 0);
       }
-    }, 500);
+    }, 200);
   }
 
   updateCustomMesh() {
@@ -331,7 +327,7 @@ export class Application {
   }
 
   render() {
-    //this.controls.update();
+    this.controls.update();
     this.updateCustomMesh();
     this.mainRenderer.render(this.scene, this.views[0].camera);
     requestAnimationFrame(() => this.render());
@@ -350,6 +346,13 @@ export class Application {
     div.setAttribute("class", "main-canvas-container");
     app.appendChild(div);
     this.container = div;
+  }
+
+  addListeners() {
+    console.log("addListeners");
+    this.textureEvent = new Event("texturesUpdated");
+    window.addEventListener("resize", this.handleResize);
+    window.addEventListener("texturesUpdated", this.renderPreviews);
   }
 
   createPreviews() {
@@ -424,6 +427,7 @@ export class Application {
   }
 
   handleResize(event) {
+    console.log("handle resize");
     const { clientWidth, clientHeight } = this.container;
     this.views[0].camera.aspect = clientWidth / clientHeight;
     this.views[0].camera.updateProjectionMatrix();
@@ -491,13 +495,12 @@ export class Application {
       .onChange(val => {
         this.setMeshesColor(meshRef, this.model, this.meshes[meshRef].color);
       });
-    this.setMeshesColor(meshRef, this.model, this.meshes[meshRef].color);
 
     if (this.meshes[meshRef].pattern) {
       this.texturePattern = this.textureFolder
         .add(this.meshes[meshRef], "pattern", [
           "None",
-          ...Object.keys(this.textures).slice(4, 8),
+          ...Object.keys(this.textures).slice(4, 7),
         ])
         .onChange(val => {
           this.meshes[meshRef].pattern = val;
@@ -582,7 +585,7 @@ export class Application {
   }
 
   setupControls() {
-    /*     this.controls = OrbitControls(
+    this.controls = new OrbitControls(
       this.views[0].camera,
       this.mainRenderer.domElement
     );
@@ -590,7 +593,7 @@ export class Application {
     this.controls.maxDistance = 1500;
     this.controls.minDistance = 0;
     this.controls.autoRotate = false;
-    this.controls.maxPolarAngle = Math.PI / 2; */
+    this.controls.maxPolarAngle = Math.PI / 2;
   }
 
   setupGUI() {
@@ -615,6 +618,7 @@ export class Application {
           const child = this.model.getObjectByName(childName);
           this.setMaterial(child);
         });
+        window.dispatchEvent(this.textureEvent);
       });
 
     materialFolder.open();
@@ -648,6 +652,7 @@ export class Application {
         child.material.color = new THREE.Color(color);
       }
     });
+    window.dispatchEvent(this.textureEvent);
   }
 
   forEachMeshes(meshRef, model, func) {
@@ -667,6 +672,7 @@ export class Application {
       }
       child.material.needsUpdate = true;
     });
+    window.dispatchEvent(this.textureEvent);
   }
 
   getTexture(name) {

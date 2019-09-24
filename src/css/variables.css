@@ -1,9 +1,9 @@
 :root {
   /* COLORS */
-  --colors-background-primary: #474747;
+
   --colors-background-secondary: #d6d6de;
   --colors-header: #5f6e78;
-  --colors-background-main: rgb(214, 214, 222);
+  --colors-background-main: radial-gradient(#fff, #666);
   --colors-background-gradient:
     radial-gradient(
       circle,
