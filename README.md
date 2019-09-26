@@ -1,3 +1,3 @@
-# threejs-gltf-model-texture-customizer
+# POC Threejs GLTF Model Texture Customizer
 
 ![](screenshot.gif)
