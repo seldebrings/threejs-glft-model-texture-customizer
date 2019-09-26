@@ -18,8 +18,6 @@ const canvasNormal =
   "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/canvas_normal.jpg";
 const leatherNormal =
   "https://superpills.github.io/threejs-glft-model-texture-customizer/src/textures/leather_normal.png";
-//import * as vertShader from "../glsl/vert.glsl";
-//import * as fragShader from "../glsl/frag.glsl";
 const gltfFile =
   "https://superpills.github.io/threejs-glft-model-texture-customizer/src/gltf/vans.gltf";
 
@@ -30,65 +28,25 @@ export class Application {
     } else {
       this.createContainer();
     }
-
     this.bindEventHandlers();
     this.init();
     this.render();
-    /*  if (Detector.webgl) {
-      this.bindEventHandlers();
-      this.init();
-      this.render();
-    } else {
-      const warning = Detector.getWebGLErrorMessage();
-      this.container.appendChild(warning);
-    } */
   }
 
   /**
    * Bind event handlers to the Application instance.
    */
   bindEventHandlers() {
-    this.createPreviews = this.createPreviews.bind(this);
-    this.initViews = this.initViews.bind(this);
-    this.setupGUI = this.setupGUI.bind(this);
-    this.setupCamera = this.setupCamera.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.onMouseOver = this.onMouseOver.bind(this);
     this.onMouseOut = this.onMouseOut.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
-    this.removeGUIControls = this.removeGUIControls.bind(this);
-    this.addGUIFolder = this.addGUIFolder.bind(this);
-    this.addControls = this.addControls.bind(this);
-    this.declareObjects = this.declareObjects.bind(this);
-    this.loadModel = this.loadModel.bind(this);
-    this.loopThrough = this.loopThrough.bind(this);
-    this.getMeshes = this.getMeshes.bind(this);
-    this.setListeners = this.setListeners.bind(this);
     this.setMaterial = this.setMaterial.bind(this);
     this.setShaderMaterial = this.setShaderMaterial.bind(this);
     this.renderPreviews = this.renderPreviews.bind(this);
-    this.updateCustomMesh = this.updateCustomMesh.bind(this);
-    this.getMeshRef = this.getMeshRef.bind(this);
-    //utils
-    this.getAllChildrenNames = this.getAllChildrenNames.bind(this);
-    this.setMeshesColor = this.setMeshesColor.bind(this);
-    this.forEachMeshes = this.forEachMeshes.bind(this);
-    this.setMeshesMap = this.setMeshesMap.bind(this);
-    this.getTexture = this.getTexture.bind(this);
-    this.invertHex = this.invertHex.bind(this);
   }
 
   init() {
-    const getUrl = window.location;
-    const baseUrl =
-      getUrl.protocol +
-      "//" +
-      getUrl.host +
-      "/" +
-      getUrl.pathname.split("/")[1];
-    console.log("baseUrl " + baseUrl);
-
-    //window.addEventListener("resize", this.handleResize);
     this.addListeners();
     this.createPreviews();
     this.setupScene();
@@ -121,7 +79,7 @@ export class Application {
       type: "Leather",
     };
 
-    this.shoeParts = {
+    this.meshes = {
       Tag: {
         normal: "Canvas",
         editable: false,
@@ -168,8 +126,6 @@ export class Application {
         isFabric: true,
       },
     };
-
-    this.meshes = this.shoeParts; //onChange(this.shoeParts, this.renderPreviews);
   }
 
   loadModel() {
@@ -301,7 +257,6 @@ export class Application {
   }
 
   renderPreviews() {
-    console.log("renderPreviews");
     setTimeout(() => {
       for (var i = 1; i < this.views.length; i++) {
         const view = this.views[i];
@@ -314,15 +269,9 @@ export class Application {
   }
 
   updateCustomMesh() {
-    //console.log("updateCustomMesh");
-    //this.delta += 0.1;
-
     if (this.model && this.customUniforms) {
       const delta = this.clock.getDelta();
       this.customUniforms.time.value += delta * 5;
-      //console.log(JSON.stringify(customMesh));
-      // customMesh.material.uniforms.delta.value =
-      //   0.5 + Math.sin(this.delta) * 0.5;
     }
   }
 
@@ -349,7 +298,6 @@ export class Application {
   }
 
   addListeners() {
-    console.log("addListeners");
     this.textureEvent = new Event("texturesUpdated");
     window.addEventListener("resize", this.handleResize);
     window.addEventListener("texturesUpdated", this.renderPreviews);
@@ -427,7 +375,6 @@ export class Application {
   }
 
   handleResize(event) {
-    console.log("handle resize");
     const { clientWidth, clientHeight } = this.container;
     this.views[0].camera.aspect = clientWidth / clientHeight;
     this.views[0].camera.updateProjectionMatrix();
