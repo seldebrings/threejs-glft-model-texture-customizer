@@ -30,7 +30,7 @@
     "gltf-loader-2": "0.0.3",
     "on-change": "^1.6.2",
     "orbit-controls-es6": "2.0.0",
-    "three": "^0.108.0",
+    "three": "^0.125.0",
     "three.interaction": "0.2.2",
     "three.texttexture": "^20.0.0"
   },
